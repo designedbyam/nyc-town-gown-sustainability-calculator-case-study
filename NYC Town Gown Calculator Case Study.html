@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Turns Out Spreadsheets Need UX Too — Angela Molina</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,700;1,9..144,300;1,9..144,400&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1A5C38;
+    --green-mid: #2E8B57;
+    --green-light: #D6EFE0;
+    --green-accent: #52B788;
+    --cream: #F5F0E8;
+    --cream-dark: #EDE8DC;
+    --charcoal: #1C1C1A;
+    --gray: #6B6B68;
+    --gray-light: #E8E4DC;
+    --orange: #E8960C;
+    --orange-light: #FEF3DC;
+    --white: #FDFCFA;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+
+  .hero {
+    min-height: 100vh;
+    background: var(--green-dark);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.04);
+    pointer-events: none;
+  }
+
+  .hero-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 64px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .hero-nav .name {
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--green-accent);
+    letter-spacing: 0.08em;
+  }
+
+  .hero-nav .tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.06em;
+  }
+
+  .hero-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 64px;
+    max-width: 1100px;
+  }
+
+  .hero-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--green-accent);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hero-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 32px; height: 1px;
+    background: var(--green-accent);
+  }
+
+  .hero-title {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--green-accent);
+  }
+
+  .hero-subtitle {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(18px, 2.5vw, 28px);
+    font-weight: 300;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.3;
+    margin-bottom: 64px;
+    max-width: 700px;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .meta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .meta-value {
+    font-size: 14px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .hero-scroll {
+    padding: 32px 64px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .scroll-line { width: 48px; height: 1px; background: rgba(255,255,255,0.2); }
+
+  .scroll-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    letter-spacing: 0.1em;
+  }
+
+  .container { max-width: 800px; margin: 0 auto; padding: 0 32px; }
+  .container-wide { max-width: 1100px; margin: 0 auto; padding: 0 64px; }
+  .container-full { max-width: 100%; margin: 0; padding: 0 32px; }
+
+  .section {
+    padding: 96px 0;
+    border-bottom: 1px solid var(--gray-light);
+  }
+
+  .section:last-child { border-bottom: none; }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--green-mid);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 24px; height: 1px;
+    background: var(--green-mid);
+  }
+
+  h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(32px, 4vw, 52px);
+    font-weight: 300;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    margin-bottom: 32px;
+    color: var(--charcoal);
+  }
+
+  h2 em { font-style: italic; color: var(--green-mid); }
+
+  p {
+    color: #3A3A38;
+    margin-bottom: 24px;
+    font-size: 17px;
+    line-height: 1.8;
+  }
+
+  p:last-child { margin-bottom: 0; }
+
+  .visual-placeholder {
+    background: var(--cream-dark);
+    border: 1.5px dashed #B8B4AC;
+    border-radius: 4px;
+    padding: 48px 32px;
+    margin: 48px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    min-height: 280px;
+  }
+
+  .visual-placeholder-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--green-mid);
+    letter-spacing: 0.1em;
+    background: var(--green-light);
+    padding: 4px 12px;
+    border-radius: 2px;
+  }
+
+  .visual-placeholder-title {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--charcoal);
+  }
+
+  .visual-placeholder-desc {
+    font-size: 14px;
+    color: var(--gray);
+    max-width: 480px;
+    line-height: 1.6;
+  }
+
+  .quote-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 48px 0;
+    background: var(--gray-light);
+  }
+
+  .quote-card {
+    background: var(--white);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .quote-mark {
+    font-family: 'Fraunces', serif;
+    font-size: 64px;
+    line-height: 0.8;
+    color: var(--green-light);
+    font-weight: 700;
+  }
+
+  .quote-text {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--charcoal);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .quote-source {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.06em;
+    padding-top: 16px;
+    border-top: 1px solid var(--gray-light);
+  }
+
+  .recs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin: 48px 0;
+    background: var(--gray-light);
+  }
+
+  .rec-card {
+    background: var(--white);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rec-card.highlight { background: var(--green-dark); }
+
+  .rec-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.1em;
+  }
+
+  .rec-card.highlight .rec-number { color: var(--green-accent); }
+
+  .rec-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--charcoal);
+    line-height: 1.3;
+  }
+
+  .rec-card.highlight .rec-title { color: var(--white); }
+
+  .rec-desc {
+    font-size: 13px;
+    color: var(--gray);
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+  }
+
+  .rec-card.highlight .rec-desc { color: rgba(255,255,255,0.6); }
+
+  .rec-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 4px 10px;
+    border-radius: 2px;
+    align-self: flex-start;
+    margin-top: auto;
+  }
+
+  .rec-card.highlight .rec-tag { background: rgba(255,255,255,0.1); color: var(--green-accent); }
+  .rec-card:not(.highlight) .rec-tag { background: var(--green-light); color: var(--green-dark); }
+
+  .lp-sections {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--gray-light);
+    margin: 48px 0;
+  }
+
+  .lp-section-card {
+    background: var(--white);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .lp-section-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--green-mid);
+    letter-spacing: 0.1em;
+  }
+
+  .lp-section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--charcoal);
+  }
+
+  .lp-section-desc {
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .challenge-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--gray-light);
+    margin: 48px 0;
+  }
+
+  .challenge-card {
+    background: var(--cream);
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .challenge-icon { font-size: 24px; }
+
+  .challenge-title {
+    font-family: 'Fraunces', serif;
+    font-size: 18px;
+    font-weight: 400;
+    color: var(--charcoal);
+  }
+
+  .challenge-desc {
+    font-size: 14px;
+    color: var(--gray);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .deliverables-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--gray-light);
+    margin: 48px 0;
+  }
+
+  .deliverable-card {
+    background: var(--white);
+    padding: 32px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .deliverable-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--green-mid);
+    letter-spacing: 0.1em;
+  }
+
+  .deliverable-title {
+    font-family: 'Fraunces', serif;
+    font-size: 17px;
+    font-weight: 400;
+    color: var(--charcoal);
+    line-height: 1.3;
+  }
+
+  .deliverable-note {
+    font-size: 12px;
+    color: var(--gray);
+    margin: 0;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.02em;
+  }
+
+  .participant-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    background: var(--gray-light);
+    margin: 48px 0;
+  }
+
+  .participant-card {
+    background: var(--white);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .participant-icon {
+    width: 40px; height: 40px;
+    background: var(--green-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
+    margin-bottom: 4px;
+  }
+
+  .participant-type {
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--charcoal);
+    line-height: 1.3;
+  }
+
+  .participant-detail {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 0.04em;
+  }
+
+  .flow {
+    display: flex;
+    align-items: stretch;
+    margin: 48px 0;
+    background: var(--gray-light);
+    padding: 2px;
+    overflow-x: auto;
+  }
+
+  .flow-step {
+    background: var(--white);
+    padding: 28px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 140px;
+    align-self: stretch;
+  }
+
+  .flow-step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--green-mid);
+    letter-spacing: 0.1em;
+  }
+
+  .flow-step-title { font-size: 14px; font-weight: 600; color: var(--charcoal); }
+
+  .flow-step-desc {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .flow-arrow {
+    background: var(--gray-light);
+    padding: 0 8px;
+    color: var(--green-mid);
+    font-size: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    align-self: stretch;
+  }
+
+  .insight-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    background: var(--gray-light);
+    margin: 48px 0;
+  }
+
+  .insight-card {
+    background: var(--white);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .insight-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--green-dark);
+    background: var(--green-light);
+    padding: 4px 10px;
+    border-radius: 2px;
+    align-self: flex-start;
+  }
+
+  .insight-title {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--charcoal);
+    line-height: 1.3;
+  }
+
+  .insight-quote {
+    font-size: 14px;
+    font-style: italic;
+    color: var(--gray);
+    border-left: 2px solid var(--green-light);
+    padding-left: 16px;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .closing {
+    background: var(--green-dark);
+    padding: 120px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .closing::before {
+    content: '';
+    position: absolute;
+    top: -150px; right: -150px;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .closing h2 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.15;
+    max-width: 700px;
+    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+  }
+
+  .closing h2 em { font-style: italic; color: var(--green-accent); }
+  .closing p { color: rgba(255,255,255,0.6); max-width: 600px; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-eyebrow { animation: fadeUp 0.6s ease forwards; }
+  .hero-title { animation: fadeUp 0.6s 0.15s ease forwards; opacity: 0; }
+  .hero-subtitle { animation: fadeUp 0.6s 0.3s ease forwards; opacity: 0; }
+  .hero-meta { animation: fadeUp 0.6s 0.45s ease forwards; opacity: 0; }
+
+  @media (max-width: 768px) {
+    .hero-nav, .hero-content, .hero-scroll { padding-left: 24px; padding-right: 24px; }
+    .container-wide { padding: 0 24px; }
+    .container { padding: 0 24px; }
+    .recs-grid { grid-template-columns: 1fr 1fr; }
+    .lp-sections { grid-template-columns: 1fr; }
+    .challenge-grid { grid-template-columns: 1fr; }
+    .deliverables-grid { grid-template-columns: 1fr 1fr; }
+    .participant-grid { grid-template-columns: 1fr 1fr; }
+    .quote-grid { grid-template-columns: 1fr; }
+    .insight-grid { grid-template-columns: 1fr; }
+    .closing { padding: 80px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <nav class="hero-nav">
+    <span class="name">Angela Molina</span>
+    <span class="tag">UX Research · Spring 2026</span>
+  </nav>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Case Study</div>
+    <h1 class="hero-title">Turns Out<br>Spreadsheets<br><em>Need UX Too</em></h1>
+    <p class="hero-subtitle">Rethinking NYC Town+Gown's Sustainable Events Carbon Emissions Calculator</p>
+    <div class="hero-meta">
+      <div class="meta-item">
+        <span class="meta-label">Client</span>
+        <span class="meta-value">NYC Town+Gown · Mayor's Office</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Methods</span>
+        <span class="meta-value">Remote Moderated User Testing</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">My Role</span>
+        <span class="meta-value">UX Researcher · Landing Page Designer</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Timeline</span>
+        <span class="meta-value">Spring 2026, 6 Weeks</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- OVERVIEW -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Overview</div>
+    <h2>A tool built for everyone,<br><em>tested by no one</em></h2>
+    <p>The Sustainable Events Carbon Emissions Calculator helps NYC event organizers estimate the carbon footprint of their events across five categories: Venue and Materials, Energy, Transportation, Food and Drink, and Waste. It was built through a collaboration between the NYC Mayor's Office of Operations, the NYC Department of Sanitation, and the NYC Town+Gown program.</p>
+    <p>The calculator had a lot going for it, despite it being a spreadsheet. Organized tabs, auto-calculating formulas, a benchmark comparison from a dataset of 954 events, and a summary page that pulled everything together. The one thing it was missing was a real user's perspective in trying to use it.</p>
+    <p>Our team of four from Pratt Institute's DX Center was brought in to run user testing and figure out what was working and what wasn't.</p>
+
+    <div style="background: var(--green-dark); border-radius: 4px; padding: 40px 48px; margin: 48px 0;">
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding-bottom: 36px; border-bottom: 0.5px solid rgba(255,255,255,0.12);">
+
+        <div style="padding-right: 48px; border-right: 0.5px solid rgba(255,255,255,0.12);">
+          <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px;">Methods</p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Remote moderated user testing</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Unmoderated user testing</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Note taking</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Affinity mapping</li>
+          </ul>
+        </div>
+
+        <div style="padding-left: 48px; display: flex; flex-direction: column; gap: 24px;">
+          <div>
+            <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px;">Team</p>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>4 people</li>
+              <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Pratt DX Center</li>
+            </ul>
+          </div>
+          <div>
+            <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px;">Timeline</p>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+              <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Spring 2026</li>
+              <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>6 Weeks</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; padding-top: 36px;">
+
+        <div style="padding-right: 48px; border-right: 0.5px solid rgba(255,255,255,0.12);">
+          <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px;">My Role</p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>UX Researcher</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Landing Page Designer</li>
+          </ul>
+        </div>
+
+        <div style="padding-left: 48px;">
+          <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 12px;">Tools</p>
+          <ul style="list-style: none; padding: 0; margin: 0;">
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Zoom</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>DSCOUT</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Excel</li>
+            <li style="font-size: 15px; color: rgba(255,255,255,0.85); line-height: 1.9; padding-left: 14px; position: relative;"><span style="position: absolute; left: 0; color: var(--green-accent);">·</span>Figma</li>
+          </ul>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="section-label" style="margin-top: 48px;">My Role</div>
+    <p>I ran two unmoderated testing sessions on my own and took notes for two additional moderated sessions. I spent a lot of time observing people open this calculator for the first time and seeing exactly where things went wrong.</p>
+    <p>That experience shaped my main contribution: designing and building the landing page, which became Recommendation 1.</p>
+  </div>
+</section>
+
+<!-- RESEARCH -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Research and Methods</div>
+    <h2>Getting eight strangers to open<br><em>a spreadsheet on Zoom</em></h2>
+    <p>We recruited eight participants through DSCOUT Private Panels and local event networks. All of them had organized events in New York City before, ranging from university wide events to city events and concerts. Most of these event planners had little to no background in sustainability or carbon tracking, which allowed us to test the calculator with varying expertise and knowledge in this area and gave us valuable insights.</p>
+    <p>Each session ran about 30 minutes over Zoom where participants talked through what they were seeing and doing as they went through the tool. We kept sessions to one interviewer and one note taker to stay consistent and avoid influencing how people responded and reacted.</p>
+    <p>Testing a spreadsheet is also not something most usability research is set up for. There is no user flow to map nor was there a clickable prototype to hand someone. We had to pay extra attention to small things, like where someone paused, what they skipped, and what made them scroll back and forth, and figure out how to turn those moments into useful findings.</p>
+  </div>
+
+  <div class="container-wide" style="margin-top: 48px;">
+    <div class="flow">
+      <div class="flow-step">
+        <div class="flow-step-num">01</div>
+        <div class="flow-step-title">Recruit</div>
+        <div class="flow-step-desc">DSCOUT Private Panels and local event networks</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">02</div>
+        <div class="flow-step-title">Screen</div>
+        <div class="flow-step-desc">NYC event experience, past year, some spreadsheet familiarity</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">03</div>
+        <div class="flow-step-title">Session</div>
+        <div class="flow-step-desc">30 min Zoom, 1 interviewer and 1 note taker, think-aloud format</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">04</div>
+        <div class="flow-step-title">Tasks</div>
+        <div class="flow-step-desc">Explore, enter data, interpret results, discuss how they would share it</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="flow-step-num">05</div>
+        <div class="flow-step-title">Synthesize</div>
+        <div class="flow-step-desc">Compare sessions, affinity mapping, identify recurring themes</div>
+      </div>
+    </div>
+
+    <div style="background: var(--green-light); padding: 40px 48px; border-radius: 4px; margin: 48px 0;">
+      <div style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--green-dark); letter-spacing: 0.08em; margin-bottom: 12px;">8 TOTAL</div>
+      <div style="font-family: 'Fraunces', serif; font-size: 28px; color: var(--green-dark); line-height: 1.3;">Most had little to no sustainability background</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINDINGS -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">What We Found</div>
+    <h2>The same thing kept<br><em>happening in every session</em></h2>
+    <p>Almost every session started the same way. A participant would open the spreadsheet, land on the Summary tab, look around for a few seconds, and say some version of the same thing.</p>
+  </div>
+
+  <div class="container-wide">
+    <div class="quote-grid">
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">I'm not really sure what I'm looking at.</div>
+        <div class="quote-source">Participant 2 · Festival Organizer</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">Good tool but would be better to understand what these metrics mean.</div>
+        <div class="quote-source">Participant 5 · Concert Producer</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">It's nice to see that summarized way to see that information but I am not sure what to fill in most of these labels.</div>
+        <div class="quote-source">Participant 1 · Community Organizer</div>
+      </div>
+      <div class="quote-card">
+        <div class="quote-mark">"</div>
+        <div class="quote-text">I'm not very sure about the other tabs.</div>
+        <div class="quote-source">Participant 7 · Event Manager</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" style="margin-top: 0;">
+    <p>The calculator wasn't broken. It just didn't explain itself. There was no introduction, no guidance on where to start, and no indication of which tabs were relevant for different types of events. A club event organizer and a large concert producer opened the same spreadsheet with no way of knowing their experience should look completely different.</p>
+    <p>The confusion came up in four consistent areas across all eight sessions.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <img src="before.png" alt="Original calculator Summary tab — the first screen users saw when opening the tool" style="max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">The original Summary tab — users landed here with no introduction or guidance</p>
+    </div>
+
+    <div class="insight-grid">
+      <div class="insight-card">
+        <div class="insight-tag">FINDING 01</div>
+        <div class="insight-title">No upfront context for what the tool was</div>
+        <div class="insight-quote">"Am I supposed to fill all of this in? What does this actually do?"</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-tag">FINDING 02</div>
+        <div class="insight-title">Unsure which tabs applied to their event</div>
+        <div class="insight-quote">"I'm not very sure about the other tabs."</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-tag">FINDING 03</div>
+        <div class="insight-title">Color coding and inputs were unclear</div>
+        <div class="insight-quote">"I'm not really sure what I'm looking at, what these labels mean."</div>
+      </div>
+      <div class="insight-card">
+        <div class="insight-tag">FINDING 04</div>
+        <div class="insight-title">Results showed a number with no context</div>
+        <div class="insight-quote">"Good tool but would be better to understand what these metrics mean."</div>
+      </div>
+    </div>
+
+    <div style="margin: 48px 0;">
+      <img src="affinity.png" alt="Affinity map showing clusters of user testing findings" style="max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">Affinity map — findings organized into themes after all eight sessions</p>
+    </div>
+  </div>
+</section>
+
+<!-- RECOMMENDATIONS OVERVIEW -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Recommendations</div>
+    <h2>Four problems,<br><em>four recommendations</em></h2>
+    <p>Based on the testing, we put together four recommendations. Each one addressed a different part of the problem. And they all connected. A user who didn't understand the tool wouldn't open the tabs. A user who didn't know which tabs to open wouldn't fill in the data. A user who didn't fill in the data wouldn't get to the results. And a user who got to the results had no way to make sense of them.</p>
+    <p>That meant the order mattered. Recommendation 1 had to come first because everything else depended on it.</p>
+  </div>
+
+  <div class="container-wide">
+    <div class="recs-grid">
+      <div class="rec-card highlight">
+        <div class="rec-number">01 — My Recommendation</div>
+        <div class="rec-title">Create a landing page to set context</div>
+        <div class="rec-desc">A dedicated first tab that gives users everything they need to know before they touch any data.</div>
+        <div class="rec-tag">Landing Page</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-number">02</div>
+        <div class="rec-title">Add tab-wise summaries and guidance</div>
+        <div class="rec-desc">Short guidance sections at the top of each tab, plus a running emissions subtotal per section.</div>
+        <div class="rec-tag">Tab Design</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-number">03</div>
+        <div class="rec-title">Simplify inputs and visual treatment</div>
+        <div class="rec-desc">Remove technical columns, improve input styling, and add hover notes with plain-language guidance.</div>
+        <div class="rec-tag">Data Entry</div>
+      </div>
+      <div class="rec-card">
+        <div class="rec-number">04</div>
+        <div class="rec-title">Translate results into an actionable report</div>
+        <div class="rec-desc">A dedicated Emissions Report tab with breakdowns, benchmarks, next steps, and a glossary.</div>
+        <div class="rec-tag">Results</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REC 1 -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Recommendation 01 — My Work <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-dark); background: var(--green-light); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.06em; margin-left: 8px;">Angela Molina</span></div>
+    <h2>The landing page:<br><em>where I started</em></h2>
+    <p>After spending time in testing sessions and watching people open the spreadsheet and immediately feel lost, it was only natural to give the user context as to what they were looking at. Which prompted me to add a landing page to the tool to properly introduce itself.</p>
+    <p>All the other recommendations assumed users had already decided to engage with the calculator. But if someone didn't know what they were looking at in the first thirty seconds, they weren't going to get far enough to benefit from any of those changes.</p>
+    <p>I organized the landing page around six sections, each one based on a question that came up directly in testing.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--gray-light);">
+        <div style="background: var(--white); padding: 24px;">
+          <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gray); letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 12px;">Before</p>
+          <img src="before.png" alt="Original calculator Summary tab" style="max-width: 100%; height: auto; border-radius: 2px; display: block; margin: 0 auto;">
+          <p style="font-size: 13px; color: var(--gray); margin-top: 12px; line-height: 1.5;">Users landed here with no introduction, no guidance, and no idea where to start.</p>
+        </div>
+        <div style="background: var(--white); padding: 24px;">
+          <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-mid); letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 12px;">After</p>
+          <img src="after.png" alt="New landing page tab added to the calculator" style="max-width: 100%; height: auto; border-radius: 2px; display: block; margin: 0 auto;">
+          <p style="font-size: 13px; color: var(--gray); margin-top: 12px; line-height: 1.5;">A dedicated first tab that answers every question a first-time user would have before they touch any data.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="lp-sections">
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 01</div>
+        <div class="lp-section-title">What is this calculator?</div>
+        <div class="lp-section-desc">A short description of the tool, what it measures, and who it is for. This didn't exist anywhere in the original workbook.</div>
+      </div>
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 02</div>
+        <div class="lp-section-title">How do I use it?</div>
+        <div class="lp-section-desc">A step-by-step guide through the tab order, where to enter data, and what the Summary tab shows at the end.</div>
+      </div>
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 03</div>
+        <div class="lp-section-title">What do I actually need to fill in?</div>
+        <div class="lp-section-desc">An explanation of where to input data in the tabs. This is where introducing the orange border from Recommendation 3 is explained.</div>
+      </div>
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 04</div>
+        <div class="lp-section-title">Which tabs do I need?</div>
+        <div class="lp-section-desc">A short guide organized by event type. A community fair organizer can immediately see which tabs apply to them and which ones to skip.</div>
+      </div>
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 05</div>
+        <div class="lp-section-title">Tab directory</div>
+        <div class="lp-section-desc">A table listing every tab, what it covers, and when to use it.</div>
+      </div>
+      <div class="lp-section-card">
+        <div class="lp-section-num">SECTION 06</div>
+        <div class="lp-section-title">Understanding your results</div>
+        <div class="lp-section-desc">A plain-language explanation of tCO2e and how the benchmark comparison works, so users know what their number means before they get to the Summary tab.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0; display: flex; flex-direction: column; gap: 2px; background: var(--gray-light);">
+      <div style="background: var(--white); padding: 24px;">
+        <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-mid); letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 12px;">Sections 1 — 3</p>
+        <img src="landing_p1.png" alt="Landing page sections 1 through 3" style="max-width: 100%; height: auto; border-radius: 2px; display: block; margin: 0 auto;">
+        <p style="font-size: 13px; color: var(--gray); margin-top: 12px; line-height: 1.5;">What is this calculator · How to use it · What do I need to fill in</p>
+      </div>
+      <div style="background: var(--white); padding: 24px;">
+        <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-mid); letter-spacing: 0.1em; text-transform: uppercase; margin: 0 0 12px;">Sections 4 — 6</p>
+        <img src="landing_p2.png" alt="Landing page sections 4 through 6" style="max-width: 100%; height: auto; border-radius: 2px; display: block; margin: 0 auto;">
+        <p style="font-size: 13px; color: var(--gray); margin-top: 12px; line-height: 1.5;">Which tabs do I need · Tab directory · Understanding your results</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REC 2 -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Recommendation 02 <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gray); background: var(--gray-light); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.06em; margin-left: 8px;">Francois Yap</span></div>
+    <h2>Giving each tab<br><em>a little more context</em></h2>
+    <p>Once a user got past the landing page, the next issue was that each tab dropped them straight into a data table with no explanation of what it was asking or why. Participants in the Transportation tab said they didn't know what the labels meant. In the Waste tab, one participant mentioned they track waste in bags, not by weight, and would have prepared differently if they had known what the calculator needed.</p>
+    <p>The recommendation was to add a short guidance section at the top of each tab before the data table starts. It would explain what the tab covers, what information to have ready, and what to skip if something doesn't apply. Each tab would also show a running emissions subtotal so users could see the impact of what they were entering without going back to the Summary tab each time.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <img src="rec2.png" alt="Recommendation 2 — tab with guidance section added at the top and subtotal at the bottom" style="max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">Venue and Material tab with plain-language guidance at the top and a running emissions subtotal at the bottom</p>
+    </div>
+  </div>
+</section>
+
+<!-- REC 3 -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Recommendation 03 <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gray); background: var(--gray-light); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.06em; margin-left: 8px;">Harleen Kaur</span></div>
+    <h2>Making the inputs<br><em>easier to read</em></h2>
+    <p>The visual design of the calculator was also causing confusion. The red border around the input column, which was meant to show users where to type, was being read as an error. The color coding on the emissions column was inconsistent. And columns like EF (kg CO2e/unit) and Default added a lot of information that most users didn't need and couldn't interpret.</p>
+    <p>The recommendation was to remove the Default and EF columns from the main view and move them to the reference tab for anyone who wants to see the methodology. The input border would switch to a lighter orange accent that signals "enter here" without looking like something is wrong. Hover notes on each input cell would show a suggested estimate based on event type and a short description of what the field is asking for.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <img src="rec3.png" alt="Recommendation 3 — simplified tab with orange input border and hover note showing suggested estimates" style="max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">Simplified tab with orange input border and hover notes showing suggested estimates by event type</p>
+    </div>
+  </div>
+</section>
+
+<!-- REC 4 -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Recommendation 04 <span style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--gray); background: var(--gray-light); padding: 3px 10px; border-radius: 2px; letter-spacing: 0.06em; margin-left: 8px;">Sharron Lou</span></div>
+    <h2>Making the results<br><em>mean something</em></h2>
+    <p>After going through the whole calculator, users arrived at the Summary tab and saw their total emissions number. Most of them had no idea what to do with it. There was no explanation of what tCO2e means, the benchmark comparison was easy to miss, and there was nothing telling them what to do next.</p>
+    <p>The recommendation was to add a dedicated Emissions Report tab with five sections: a summary of key metrics with benchmark indicators, a plain-language explanation of tCO2e and how the result compares to similar events worldwide, a breakdown of emissions by category, a prioritized list of next steps ranked by impact, and a glossary of key terms. All figures update automatically when inputs change, and the report is designed to be shareable with sponsors, venues, or city agencies.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <img src="rec4.png" alt="Recommendation 4 — Emissions Report tab with breakdowns, recommendations, and glossary" style="max-width: 100%; height: auto; border-radius: 4px; display: block; margin: 0 auto;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">The Emissions Report tab — emissions by category, prioritized next steps, and a glossary of key terms</p>
+    </div>
+  </div>
+</section>
+
+<!-- BEYOND THE BRIEF -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Beyond the Brief</div>
+    <h2>Something we built<br><em>that nobody asked for</em></h2>
+    <p>We decided to produce a full web-based version of the calculator in Figma. It wasn't part of the deliverables, but it showed what the tool could look like as a proper digital product, with tab navigation, sliders for transportation mode share, a shareable report, and hover notes explaining technical terms in plain language.</p>
+    <p>It ended up being one of the most memorable parts of our client presentation. This helped us showcase to the client that the recommendations weren't just fixes for the spreadsheet, but a direction the tool could grow toward.</p>
+  </div>
+
+  <div class="container-wide">
+    <div style="margin: 48px 0;">
+      <p style="font-family: 'DM Mono', monospace; font-size: 10px; color: var(--green-accent); letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 16px; background: var(--green-dark); display: inline-block; padding: 4px 12px; border-radius: 2px;">Beyond the brief — a web-based version of the calculator</p>
+
+      <div style="position: relative;">
+        <div id="carousel" style="overflow: hidden; border-radius: 4px; background: var(--cream);">
+          <div id="carousel-inner" style="display: flex; transition: transform 0.4s ease;">
+            <img src="figma1.png" alt="Figma prototype — Event Setup screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma2.png" alt="Figma prototype — Transportation screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma3.png" alt="Figma prototype — Food and Drink screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma4.png" alt="Figma prototype — Waste and Reuse screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma5.png" alt="Figma prototype — Energy screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma6.png" alt="Figma prototype — Venue and Material screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma7.png" alt="Figma prototype — Results screen" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+            <img src="figma8.png" alt="Figma prototype — Shareable PDF report" style="min-width: 100%; max-width: 100%; height: auto; display: block; flex-shrink: 0; object-fit: contain;">
+          </div>
+        </div>
+
+        <button onclick="moveCarousel(-1)" style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); background: var(--green-dark); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.9;">&#8592;</button>
+        <button onclick="moveCarousel(1)" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: var(--green-dark); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.9;">&#8594;</button>
+      </div>
+
+      <div id="carousel-dots" style="display: flex; justify-content: center; gap: 8px; margin-top: 16px;">
+        <span class="dot active" onclick="goToSlide(0)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--green-dark); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(1)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(2)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(3)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(4)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(5)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(6)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+        <span class="dot" onclick="goToSlide(7)" style="width: 8px; height: 8px; border-radius: 50%; background: var(--gray-mid); cursor: pointer; display: inline-block;"></span>
+      </div>
+
+      <p id="carousel-caption" style="font-family: 'DM Mono', monospace; font-size: 11px; color: var(--gray); margin-top: 12px; text-align: center; letter-spacing: 0.04em;">01 / 08 — Event Setup</p>
+    </div>
+
+    <script>
+      var current = 0;
+      var captions = ['01 / 08 — Event Setup', '02 / 08 — Transportation', '03 / 08 — Food and Drink', '04 / 08 — Waste and Reuse', '05 / 08 — Energy', '06 / 08 — Venue and Material', '07 / 08 — Results', '08 / 08 — Shareable PDF Report'];
+      function updateCarousel() {
+        document.getElementById('carousel-inner').style.transform = 'translateX(-' + (current * 100) + '%)';
+        document.getElementById('carousel-caption').textContent = captions[current];
+        var dots = document.querySelectorAll('.dot');
+        dots.forEach(function(d, i) { d.style.background = i === current ? 'var(--green-dark)' : 'var(--gray-mid)'; });
+      }
+      function moveCarousel(dir) {
+        current = (current + dir + 8) % 8;
+        updateCarousel();
+      }
+      function goToSlide(n) {
+        current = n;
+        updateCarousel();
+      }
+    </script>
+  </div>
+</section>
+
+<!-- CHALLENGES -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Challenges</div>
+    <h2>A few things that<br><em>made this harder</em></h2>
+  </div>
+
+  <div class="container-wide">
+    <div class="challenge-grid">
+      <div class="challenge-card">
+        <div class="challenge-icon">📊</div>
+        <div class="challenge-title">Testing a spreadsheet is not typical</div>
+        <div class="challenge-desc">Most usability research is set up for websites and apps. There is no prototype to click through with a spreadsheet. We had to figure out how to observe and interpret small moments, like a pause or a scroll, and turn them into recommendations for a tool that had to be improved on its existing format. This was not an easy task considering we ourselves were just as confused when we first saw what we had to work with. It took a lot of time understanding what the tool was for us to understand what we should be asking during the test and how to drive the conversation to get the best data and feedback from participants.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">🤝</div>
+        <div class="challenge-title">Navigating the client relationship</div>
+        <div class="challenge-desc">The Town+Gown team was careful about their contacts, which was understandable since participants were from their professional network and held high positions in the industry. There was a moment where stakeholders wanted to be involved in sessions in a way the method didn't allow for, which could have created biased data. We had to build trust with the client to keep sessions to two people and protect the integrity of the research.</div>
+      </div>
+      <div class="challenge-card">
+        <div class="challenge-icon">🚀</div>
+        <div class="challenge-title">The web prototype was out of scope</div>
+        <div class="challenge-desc">We decided to build a full Figma version of the calculator as a digital product despite the limited time we had. It wasn't asked for, but it gave the client a concrete sense of where the tool could go and what the recommendations could look like in a different format.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DELIVERABLES -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Deliverables</div>
+    <h2>What we<br><em>delivered</em></h2>
+  </div>
+
+  <div class="container-wide">
+    <div class="deliverables-grid">
+      <div class="deliverable-card">
+        <div class="deliverable-number">01</div>
+        <div class="deliverable-title">Usability Testing Report</div>
+        <div class="deliverable-note">Formal report submitted to client</div>
+      </div>
+      <div class="deliverable-card">
+        <div class="deliverable-number">02</div>
+        <div class="deliverable-title">Client Presentation Deck</div>
+        <div class="deliverable-note">Presented to NYC Town+Gown</div>
+      </div>
+      <div class="deliverable-card">
+        <div class="deliverable-number">03</div>
+        <div class="deliverable-title">Excel Prototype</div>
+        <div class="deliverable-note">Reflecting Recommendations 1-4</div>
+      </div>
+      <div class="deliverable-card">
+        <div class="deliverable-number">04</div>
+        <div class="deliverable-title">Web Prototype</div>
+        <div class="deliverable-note">Beyond scope, additional exploration</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSING -->
+<div class="closing">
+  <div style="max-width: 800px; margin: 0 auto;">
+    <div class="section-label" style="color: var(--green-accent);">Reflection</div>
+    <h2>Users didn't need the calculator to be simpler. They needed it to <em>talk to them first.</em></h2>
+    <p>A tool can be well-built and genuinely useful and still lose people in the first thirty seconds because it assumes too much about what they already know. Context is part of the design.</p>
+    <p style="margin-top: 24px;">Building the landing page showed me how much a single clear introduction can do. It's not an animated tutorial or an onboarding flow. It's just a page that says: here's what this is, here's how it works, here's where you start. For event organizers trying to track sustainability without a background in carbon accounting, that was what they needed.</p>
+    <p style="margin-top: 24px;">Seeing how the four recommendations fit together also taught me something useful. Each one only worked if the one before it was already in place. Figuring out what needs to be true before anything else can work, and starting there, is a good way to think about any design problem.</p>
+  </div>
+</div>
+
+</body>
+</html>
